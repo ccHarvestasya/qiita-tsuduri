@@ -5,13 +5,15 @@ tags:
   - MongoDB
   - Docker
   - docker-compose
-  - Shoestring
+  - shoestring
 private: false
-updated_at: ''
-id: null
+updated_at: '2026-11-22T21:40:19+09:00'
+id: 58e8a6314e2bb10aeacc
 organization_url_name: null
 slide: false
 ignorePublish: false
+posting_campaign_uuid: null
+agreed_posting_campaign_term: false
 ---
 
 ## はじめに
@@ -42,12 +44,16 @@ mongoComposeRunParam: --wiredTigerCacheSizeGB 2
 
 ### Shoestring
 
+:::note info
+この記事のShoestringに関する説明は、MongoDBを含むフルAPIのDual構成を対象としています。ライトAPIの構成にはMongoDBがありません。
+:::
+
 ShoestringのDual構成テンプレート `docker-compose-dual.yaml` では、MongoDBの起動コマンドは次のとおりです。
 
 ```yaml:docker-compose-dual.yaml（抜粋）
 db:
-  image: "{{ mongo_image }}"
-  user: "{{ user }}"
+  image: '{{ mongo_image }}'
+  user: '{{ user }}'
   command: mongod --dbpath=/dbdata
   stop_signal: SIGINT
 ```
@@ -193,7 +199,7 @@ ShoestringのDual構成には `initiate` というサービスがあります。
 
 ```yaml:docker-compose-dual.yaml（抜粋）
 initiate:
-  image: "{{ mongo_image }}"
+  image: '{{ mongo_image }}'
   command: /bin/bash /startup/mongors.sh /real_data/startup/mongo-initialized
 ```
 
@@ -206,26 +212,39 @@ mongosh db/catapult < mongoDbPrepare.js
 
 この方式は、MongoDB公式イメージの初回初期化に依存していません。そのため、`initiate` コンテナが起動してスクリプトが正常に実行されれば、既存のMongoDBにもインデックスの作成処理が適用されます。
 
-MongoDBの `createIndex()` は、まったく同じ定義のインデックスがすでにある場合は何もしません。そのため、スクリプトを繰り返し実行しても、既存のインデックスが作り直されることはありません。一方、同じ名前で定義が異なるインデックスがある場合はエラーになり、自動では置き換えられません。
+MongoDBの `createIndex()` は、まったく同じ定義のインデックスがすでにある場合は何もしません。そのため、スクリプトを繰り返し実行しても、既存のインデックスが作り直されることはありません。一方、名前またはキーが同じで定義が一致しないインデックスがある場合はエラーになり、自動では置き換えられません。
 
-また、**Shoestringを更新しただけで、必ず最新のインデックスになるわけではありません。** 更新されたスクリプトが配置され、`initiate` コンテナで実際に実行される必要があります。コンテナが再作成されないCompose操作では、スクリプトが再実行されない場合もあります。
+また、**Shoestringを更新しただけで、必ず最新のインデックスになるわけではありません。** `initiate` コンテナはスクリプトを実行したあと `sleep infinity` で動き続けます。`./mongo` はバインドマウントなので、中のスクリプトが更新されても `docker compose up -d` ではコンテナが再作成されず、スクリプトも再実行されません。スクリプトを再実行するには、`initiate` コンテナを再起動します。
+
+```bash
+docker compose restart initiate
+```
 
 ## bootstrapで運用しているノードはインデックスを確認する
 
 長期間bootstrapで運用しているノードでは、構築した時点のインデックスがそのまま残っている可能性があります。MongoDBやRESTのバージョンを更新していても、インデックスまで更新されているとは限りません。
 
-現在のインデックスは、次のように確認できます。bootstrapの場合は、Composeファイルがある `target/docker/` で実行します。
+例えば、symbol-bootstrapでは [#377](https://github.com/symbol/symbol-bootstrap/commit/3973491e9b2616dae1cf698c185109cb444ec1a1) の変更で次のインデックスが追加され、v1.1.10（2023年4月）でリリースされました。
+
+- `transactions`：`{ 'transaction.mosaics.id': 1 }`
+- `transactionStatements`：`{ 'statement.receipts.targetAddress': 1 }`、`{ 'statement.receipts.senderAddress': 1 }`
+
+v1.1.10より前のbootstrapで構築したノードには、これらのインデックスがない可能性があります。
+
+現在のインデックスは、Composeファイルがある `target/docker/` で次のように確認できます。bootstrapの `db` は `--bind_ip=db` で起動していて `127.0.0.1` では待ち受けていないため、`--host db` を指定します。
 
 ```bash
-docker compose exec db mongosh \
-  --quiet \
-  --eval 'db.getSiblingDB("catapult").blocks.getIndexes()'
+docker compose exec db mongosh --host db --quiet \
+  --eval 'db.getSiblingDB("catapult").transactions.getIndexes()'
+
+docker compose exec db mongosh --host db --quiet \
+  --eval 'db.getSiblingDB("catapult").transactionStatements.getIndexes()'
 ```
 
-この結果と、利用している構築ツールの最新版にあるインデックス定義（`mongoDbPrepare.js`）を比較します。不足しているものがあれば、データベースを初期化する前に、個別に追加できないか検討するとよいでしょう。
+この結果と、利用している構築ツールの最新版にあるインデックス定義を比較します。インデックス定義は `mongoDbPrepare.js` のほかに、プラグインごとの `mongo*DbPrepare.js` にも分かれているので、まとめて確認してください。不足しているものがあれば、データベースを初期化する前に、個別に追加できないか検討するとよいでしょう。
 
 :::note warn
-bootstrap環境で手動で適用する場合は、`mongoDbPrepare.js` をそのまま流すのではなく、内容を確認して必要な `createIndex()` だけを実行する方が安全です。利用中のバージョンとスクリプトの前提が合っているとは限らないためです。
+bootstrap環境で手動で適用する場合は、準備スクリプトをそのまま流すのではなく、内容を確認して必要な `createIndex()` だけを実行する方が安全です。利用中のバージョンとスクリプトの前提が合っているとは限らないためです。
 :::
 
 ## 比較まとめ

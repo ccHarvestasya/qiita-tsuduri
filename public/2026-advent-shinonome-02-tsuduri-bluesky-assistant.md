@@ -100,28 +100,17 @@ codex exec --sandbox read-only "Symbol Mainnetの最近のブロック生成間�
 
 定期観測と、後から追加したSNSの通知取得を含めた初期の構成は、おおよそ次のようになります。
 
-```text
-     systemd ユーザータイマー
-         │              │
-    定期観測         通知取得
-    （10分）         （5分）
-         │              │
-         ▼              ▼
-   Python観測処理   Python返信処理
-         │              │
-         └──────┬───────┘
-                │ 起動・結果取得
-                ▼
-         Codex（つづり）
-                │
-                ▼
-         MongoDB MCP Server
-                │
-                ▼
-       MongoDB（Symbol Mainnet）
-
-   Python観測処理 ──→ Bluesky（投稿）
-   Python返信処理 ←─→ Bluesky（通知・返信）
+```mermaid
+flowchart TD
+    T["systemd ユーザータイマー"]
+    T -->|"10分周期"| O["Python 観測処理"]
+    T -->|"5分周期"| R["Python 返信処理"]
+    O <-->|起動・結果取得| C["Codex（つづり）"]
+    R <-->|起動・結果取得| C
+    C <-->|調査・結果取得| M["MongoDB MCP Server"]
+    M <-->|読み取り専用| D["MongoDB（Symbol Mainnet）"]
+    O -->|投稿| B["Bluesky"]
+    R <-->|通知取得・返信| B
 ```
 
 Pythonは起動やSNSとの通信、認証情報の管理、結果の検査、実行記録などを担当します。
@@ -194,23 +183,14 @@ Difficultyが上がったからといって、すぐに異常が起きたとは�
 
 初期実装では、定期観測とは別のsystemdタイマーで、5分ごとにBlueskyの通知を取得していました。
 
-```text
-Blueskyのメンション・リプライ
-          │
-          ▼
-Pythonで通知取得・受付判定
-          │
-          ▼
-Codexで質問を理解・必要に応じてMCPで調査
-          │
-          ▼
-構造化された回答案・調査の根拠
-          │
-          ▼
-Pythonで整合性検査・投稿制御
-          │
-          ▼
-Blueskyへ返信
+```mermaid
+flowchart TD
+    A["Blueskyのメンション・リプライ"]
+    A --> B["Python：通知取得・受付判定"]
+    B --> C["Codex：質問の理解・必要に応じたMCPでの調査"]
+    C --> D["構造化された回答案・調査の根拠"]
+    D --> E["Python：整合性検査・投稿制御"]
+    E --> F["Blueskyへ返信"]
 ```
 
 これで、質問する側はMongoDBの構造もクエリの書き方も知る必要がありません。Codexを直接操作する必要もなくなりました。

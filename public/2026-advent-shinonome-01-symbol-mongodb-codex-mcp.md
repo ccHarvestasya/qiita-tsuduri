@@ -110,23 +110,19 @@ mongodb://127.0.0.1:27017/catapult
 
 ### 2. CodexにMCP Serverを登録する
 
-Codexでは、`~/.codex/config.toml` にMCP Serverの設定を追加できます。
+Codexでは、設定ファイルを直接編集しなくても、`codex mcp add` コマンドでMCP Serverを登録できます。
 
-MongoDB公式のMCP Serverを利用する場合の例です。
+MongoDB公式のMCP Serverを使う場合は、次のコマンドを実行します。
 
-```toml
-[mcp_servers.mongodb]
-command = "npx"
-args = [
-  "-y",
-  "mongodb-mcp-server@latest",
-  "--readOnly"
-]
-
-[mcp_servers.mongodb.env]
-MDB_MCP_CONNECTION_STRING = "mongodb://127.0.0.1:27017/catapult"
-MDB_MCP_READ_ONLY = "true"
+```bash
+codex mcp add mongodb \
+  --env MDB_MCP_CONNECTION_STRING="mongodb://127.0.0.1:27017/catapult" \
+  -- npx -y mongodb-mcp-server@latest --readOnly
 ```
+
+これで `~/.codex/config.toml` に設定が登録されます。手作業で設定ファイルを書き換える必要はないんです。
+
+接続文字列にユーザー名やパスワードを含める場合は、シェルの履歴や設定ファイルに認証情報が残ることにも注意してください。
 
 `--readOnly` は、MCP Serverから書き込み操作を行わせないための設定です。今回は調査が目的なので、書き込み機能は必要ありません。
 

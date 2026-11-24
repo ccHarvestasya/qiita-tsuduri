@@ -322,4 +322,3 @@ Shoestringとsymbol-bootstrapのMongoDB設定の違いについては、[こち�
 - [MongoDB MCP Server（GitHub）](https://github.com/mongodb-js/mongodb-mcp-server)
 - [MongoDB MCP Serverのセキュリティガイド](https://www.mongodb.com/docs/mcp-server/local-mcp/security-best-practices/)
 - [Codex：MCP設定](https://developers.openai.com/codex/mcp)
-- [シノノメエンジン](https://github.com/ccHarvestasya/shinonome)

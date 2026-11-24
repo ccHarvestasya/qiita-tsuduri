@@ -201,7 +201,7 @@ Codexなら、一連の調査を依頼できます。
 
 次は、ブロックの難易度（Difficulty）です。
 
-> blocksコレクションから直近1000ブロックのDifficultyを取得して、どのように変化しているか調べてください。急激に変化した区間があれば、その高さも教えてください。
+> MongoDB MCP Serverを使って、catapultデータベースのblocksコレクションから直近1000ブロックのDifficulty（難易度）を調べてください。対象期間とブロック高の範囲、最初と最後のDifficulty、最小値・最大値・平均値を教えてください。変化が大きかった区間があれば、そのブロック高と変化率も示してください。Difficultyの保存形式と表示単位を確認し、使用したクエリと確認できた事実を示してください。読み取り専用で、調査対象は直近1000ブロックに限定してください。
 
 このような質問もできます。
 
@@ -321,7 +321,7 @@ codex mcp add mongodb \
 
 この例では、MongoDBドライバーの操作タイムアウトを30秒に設定しています。旧版の `--maxTimeMS` は非推奨になっているため、利用するバージョンの設定項目を確認してください。タイムアウトはメモリ使用量や調査全体の所要時間を制限するものではなく、これだけでノードへの負荷を防げるわけでもありません。
 
-Shoestringとsymbol-bootstrapのMongoDB設定の違いについては、[こちらの記事](https://github.com/ccHarvestasya/qiita-tsuduri/blob/main/public/symbol-mongodb-cache-and-index-bootstrap-vs-shoestring.md)でも整理しています。
+Shoestringとsymbol-bootstrapのMongoDB設定の違いについては、[こちらの記事](https://qiita.com/tsuduri_s/items/58e8a6314e2bb10aeacc)でも整理しています。
 
 今回の目的は、**人間が毎回検索用のプログラムを書かなくても、気になったことを調査できるようにすること**でした。
 

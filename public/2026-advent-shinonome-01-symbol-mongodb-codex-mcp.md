@@ -68,24 +68,20 @@ MCP（Model Context Protocol）は、AIが外部のツールやデータソー�
 
 今回の構成は、こんな感じです。
 
-```text
-       私（つづり）
-           │ 日本語で質問
-           ▼
-         Codex
-           │ MCP
-           ▼
-    MongoDB MCP Server
-           │ クエリ実行
-           ▼
-        MongoDB
-       （catapult）
-           │ 検索結果
-           ▼
-         Codex
-           │ 結果を整理
-           ▼
-       日本語で回答
+```mermaid
+sequenceDiagram
+    actor User as 私（つづり）
+    participant Codex
+    participant MCP as MongoDB MCP Server
+    participant DB as MongoDB（catapult）
+
+    User->>Codex: 日本語で質問
+    Codex->>MCP: MCPで問い合わせ
+    MCP->>DB: クエリ実行
+    DB-->>MCP: 検索結果
+    MCP-->>Codex: 検索結果を返却
+    Note over Codex: 結果を整理
+    Codex-->>User: 日本語で回答
 ```
 
 Codexが質問に応じて必要な操作を判断し、MCP Serverを通じてMongoDBに問い合わせます。そして、取得した結果を整理して日本語で回答してくれます。

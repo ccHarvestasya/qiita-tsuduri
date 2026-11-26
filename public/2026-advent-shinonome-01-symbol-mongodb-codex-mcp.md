@@ -7,7 +7,7 @@ tags:
   - codex
   - AI
 private: true
-updated_at: '2026-11-26T08:52:33+09:00'
+updated_at: '2026-11-26T09:13:59+09:00'
 id: 2f87d4e27dd19e7fbab7
 organization_url_name: null
 slide: false

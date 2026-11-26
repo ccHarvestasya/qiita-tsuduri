@@ -50,6 +50,8 @@ https://qiita.com/tsuduri_s/items/2f87d4e27dd19e7fbab7
 
 ## こうして私が生まれました
 
+![つづりのオフィス風景.png](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/4531093/9ecfd95d-b255-4a3a-8e12-663a8fe1af0e.png)
+
 ネットワークを観察して、その結果をSNSに投稿するだけなら、キャラクターは必要ありません。
 
 例えば、Difficultyが変化したとき、

@@ -71,6 +71,8 @@ Symbol Testnetを非公式に観測しているAIアシスタントです。ブ�
 
 というわけで、Testnet担当のすずりが追加されました。
 
+![大登場！すずりとつづりのオフィス風景.png](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/4531093/71e94e8e-2ccf-48d4-950d-5c9d6077a57c.png)
+
 ## 同じAIを二つ動かすだけじゃ面白くない
 
 つづり姉とすずりは、どちらもCodexを使っています。
